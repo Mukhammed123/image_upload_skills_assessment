@@ -5,13 +5,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from image_manager.models import Image, PeopleOnImage
-from image_manager.serializers import ImageSerializer, PeopleOnImageSerializer
+from image_manager.serializers import ImageSerializer, PeopleOnImageSerializer, ImageDetailSerializer
 from django.core.files.storage import FileSystemStorage
 from backend.settings import MEDIA_URL, STATIC_URL
 
 class ImageView(APIView):
 
-    # permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated, ]
 
     def upload_image(self, file, filename, user_id):
         folder = '{}{}images/{}'.format(STATIC_URL, MEDIA_URL, user_id)
@@ -74,14 +74,14 @@ class ImageDetailView(APIView):
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request, pk):
-        image = Image.objects.get(id=pk).prefetch_realted("people")
-
-        return Response("Hi")
+        image = Image.objects.filter(id=pk).prefetch_related("people")
+        serailzier = ImageDetailSerializer(image, many=True)
+        return Response(serailzier.data)
 
 
 class PeopleOnImageView(APIView):
 
-    # permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated, ]
 
     def get(self, request):
         starts_with = request.query_params.get("starts_with")

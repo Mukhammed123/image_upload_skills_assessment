@@ -9,6 +9,9 @@ class Image(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ["-created_at"]
+
 class PeopleOnImage(models.Model):
     name = models.CharField(max_length=255, default="Anonymous")
     image = models.ForeignKey(Image, related_name="people", on_delete=models.CASCADE)

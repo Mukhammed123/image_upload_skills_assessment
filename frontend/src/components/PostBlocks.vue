@@ -10,7 +10,7 @@
         <hr />
         <div class="body-container">
           <div class="files-container">
-            <div class="media">
+            <div class="media" @click="chooseImage(postIndex)">
               <img :src="'http://' + getBaseUrl() + post.url" style="width: 100%" />
             </div>
             <br />
@@ -25,30 +25,71 @@
         <hr />
       </a-card>
     </div>
+    <ShowDetailsDialog :show-add-dialog="showAddDialog" :imgUrl="imgUrl" :location="location" :content="content"
+      :tagged-people="taggedPeople" @close="showAddDialog = false" />
   </div>
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import { BarsOutlined, CloseOutlined, SendOutlined } from '@ant-design/icons-vue';
+import axios from "axios";
+import { useStore } from "@/stores/rootStore";
+import { defineComponent, ref } from "vue";
+import { BarsOutlined, CloseOutlined, SendOutlined } from "@ant-design/icons-vue";
+import ShowDetailsDialog from "@/components/dialogs/ShowDetailsDialog.vue";
 
 export default defineComponent({
   name: "PostBlocks",
-  components: { BarsOutlined, CloseOutlined, SendOutlined },
+  components: { BarsOutlined, CloseOutlined, SendOutlined, ShowDetailsDialog },
   props: {
     postsData: { type: Array, default: undefined },
   },
-  setup() {
+  setup(props) {
+    const store = useStore();
     const getBaseUrl = () => "localhost:8000/";
+    const showAddDialog = ref(false);
+    const imgUrl = ref("");
+    const location = ref("");
+    const content = ref("");
+    const taggedPeople = ref([]);
+    const dialogKey = ref(0);
+
+    const chooseImage = async (index) => {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/images/image/${props.postsData[index].id}/`, {
+          headers: {
+            "Authorization": store.accessToken
+          },
+        });
+        imgUrl.value = response.data[0].url;
+        content.value = response.data[0].description;
+        location.value = response.data[0].location;
+        taggedPeople.value = response.data[0].people.map(item => item.name);
+        dialogKey.value += 1;
+        showAddDialog.value = true;
+      }
+      catch (err) {
+        console.log(err);
+      }
+    }
 
     return {
-      getBaseUrl
+      showAddDialog,
+      imgUrl,
+      location,
+      content,
+      taggedPeople,
+      getBaseUrl,
+      chooseImage
     };
   },
 });
 </script>
 
 <style scoped>
+.media {
+  cursor: pointer;
+}
+
 /* .comment-container {
   transform: rotate(180deg);
 }

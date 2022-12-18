@@ -11,8 +11,17 @@ class ImageSerializer(serializers.ModelSerializer):
             "user",
         ]
 
-class ImageDetailSerializer(serializers.ModelSerializer):
+class PeopleOnImageSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = PeopleOnImage
+        fields = [
+            "name",
+        ]
+
+class ImageDetailSerializer(serializers.ModelSerializer):
+    people = PeopleOnImageSerializer(many=True)
+    
     class Meta:
         model = Image
         fields = [
@@ -23,12 +32,4 @@ class ImageDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "user",
             "people",
-        ]
-
-class PeopleOnImageSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = PeopleOnImage
-        fields = [
-            "name",
         ]
