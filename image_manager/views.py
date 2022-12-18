@@ -74,9 +74,12 @@ class ImageDetailView(APIView):
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request, pk):
-        image = Image.objects.filter(id=pk).prefetch_related("people")
-        serailzier = ImageDetailSerializer(image, many=True)
-        return Response(serailzier.data)
+        try:
+            image = Image.objects.filter(id=pk).prefetch_related("people")
+            serailzier = ImageDetailSerializer(image, many=True)
+            return Response(serailzier.data)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class PeopleOnImageView(APIView):
