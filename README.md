@@ -19,15 +19,15 @@
 * Upload Image
 ```
 const data = {
-          description: content.value,
-          filename: uploadedImgURL.value.file.name,
-          location: location.value,
-          people: taggedPeople.value,
+          description: string,
+          filename: string,
+          location: string,
+          people: Array,
         }
 const formData = new FormData();
         formData.append(
           "file",
-          uploadedImgURL.value.file
+          FILE
         );
         formData.append(
           "details",
@@ -44,7 +44,8 @@ axios.post("http://localhost:8000/api/images/", formData, {
  
  # Описание
  
- * Перед использованием системы, пользователям необходимо зарегистрироваться
+ * Перед использованием системы, пользователям необходимо зарегистрироваться и войти используя username and password для того чтобы получить токен:
+ можно зарегитсрироваться используя UI или отправить post request на `baseURL/api/user/register/` вместе с данными (username, password, email, first_name, last_name)
  * При загрузке фотографии можно указывать различную метадату: гео локацию, описание, имена людей на фото
  * Программа может отправлять список фотографий, без мета данных
  * Программа может отправлять фотографию по айди с метаданными
