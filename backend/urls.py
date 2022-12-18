@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/images/', include('image_manager.urls')),
     path('api/user/', include('user.urls')),
+    path('__debug__/', include('debug_toolbar.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.MEDIA_ROOT)

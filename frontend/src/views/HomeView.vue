@@ -2,25 +2,37 @@
   <div class="home">
     <div class="control-card">
       <div class="wrapper">
-        <div class="action-block">
-          <div class="upload-file" @click="openDialog"> {{ uploadTitle }} </div>
-          <input type="file" name="" id="fileInput" hidden @input="uploadImage">
-          <div class="filter-block">
-            <span class="all-btn">All</span>
-            <span class="start-range">
-              <a-date-picker @change="getPosts" v-model:value="startDate" :disabledDate="disableStartDate" />
-            </span>
-            <span class="end-range">
-              <a-date-picker @change="getPosts" v-model:value="endDate" :disabledDate="disableEndDate" />
-            </span>
-            <span>
-              <input v-model="enteredLocation" type="text" class="search-location" placeholder="Search by location" />
-            </span>
-          </div>
-          <div class="search-block">
-            <div class="input-container">
-              <input v-model="searchPerson" class="search-input" type="text"
-                placeholder="Search pictures by people tagged on..." />
+        <div class="action-container">
+          <div class="action-block">
+            <div class="upload-file" @click="openDialog"> {{ uploadTitle }} </div>
+            <input type="file" name="" id="fileInput" hidden @input="uploadImage">
+            <div class="filter-block">
+              <span class="all-btn" @click="getAllPosts">All</span>
+              <span class="start-range">
+                <a-date-picker @change="getPosts" v-model:value="startDate" :disabledDate="disableStartDate" />
+              </span>
+              <span class="end-range">
+                <a-date-picker @change="getPosts" v-model:value="endDate" :disabledDate="disableEndDate" />
+              </span>
+              <span>
+                <input v-model="enteredLocation" type="text" class="search-location" placeholder="Search by location"
+                  @input="getPosts" />
+              </span>
+            </div>
+            <div class="search-block">
+              <div class="input-container">
+                <input v-model="searchPerson" class="search-input" type="text"
+                  placeholder="Search pictures by people tagged on..." @input="getPeople" />
+                <a-button type="primary" @click="getPosts">Search</a-button>
+              </div>
+            </div>
+            <div class="name-options">
+              <ul>
+                <li v-for="(personName, nameIndex) in searchedPeople" :key="`${personName}-${nameIndex}`"
+                  class="person-name" @click="nameClicked(personName)">
+                  {{ personName }}
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -53,10 +65,33 @@ export default defineComponent({
     const postsData = ref([]);
     const enteredLocation = ref(undefined);
     const searchPerson = ref(undefined);
+    const searchedPeople = ref([]);
 
     onMounted(async () => {
       getPosts();
     })
+
+    const getAllPosts = () => {
+      enteredLocation.value = undefined;
+      startDate.value = undefined;
+      endDate.value = undefined;
+      searchPerson.value = undefined;
+      getPosts();
+    }
+
+    const getPeople = async () => {
+      if ((searchPerson.value || '').length > 0) {
+        const response = await axios.get("http://localhost:8000/api/images/people/", {
+          headers: {
+            "Authorization": store.accessToken
+          },
+          params: {
+            starts_with: searchPerson.value
+          }
+        });
+        searchedPeople.value = response.data.map(item => item.name);
+      } else searchedPeople.value = [];
+    }
 
     const getPosts = async () => {
       const response = await axios.get("http://localhost:8000/api/images/", {
@@ -71,7 +106,11 @@ export default defineComponent({
         }
       });
       postsData.value = response.data;
-      console.log(response);
+    }
+
+    const nameClicked = (name) => {
+      searchPerson.value = name;
+      searchedPeople.value = [];
     }
 
     const openDialog = () => {
@@ -96,6 +135,10 @@ export default defineComponent({
       postsData,
       enteredLocation,
       searchPerson,
+      searchedPeople,
+      nameClicked,
+      getPeople,
+      getAllPosts,
       getPosts,
       openDialog,
       uploadImage,
@@ -107,6 +150,40 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.action-container {
+  display: flex;
+  justify-content: center;
+}
+
+.name-options {
+  position: absolute;
+  right: 100px;
+  background-color: white;
+  border-radius: 0 0 8px 8px;
+  z-index: 2;
+}
+
+.name-options>ul {
+  margin: 0;
+  padding: 0;
+}
+
+.name-options>ul>li {
+  list-style: none;
+  margin: .3em 0;
+  cursor: pointer;
+  padding: .4em .7em;
+}
+
+.name-options>ul>li:hover {
+  background-color: rgb(250, 249, 249);
+}
+
+.input-container {
+  display: flex;
+  position: relative;
+}
+
 .home {
   height: 100%;
 }
@@ -141,10 +218,12 @@ export default defineComponent({
 }
 
 .action-block {
+  position: relative;
   margin-top: 1em;
   border-radius: 10px;
   background-color: white;
   padding: 1em;
+  width: 650px;
 }
 
 .filter-block {

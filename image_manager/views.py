@@ -11,7 +11,7 @@ from backend.settings import MEDIA_URL, STATIC_URL
 
 class ImageView(APIView):
 
-    permission_classes = [IsAuthenticated, ]
+    # permission_classes = [IsAuthenticated, ]
 
     def upload_image(self, file, filename, user_id):
         folder = '{}{}images/{}'.format(STATIC_URL, MEDIA_URL, user_id)
@@ -31,15 +31,11 @@ class ImageView(APIView):
         if location is not None:
             images = images.filter(location__icontains=location)
         if start_date is not None:
-            print("==== start date:")
-            print(type(start_date))
             images = images.filter(created_at__gte=datetime.fromtimestamp(int(start_date)))
         if end_date is not None:
-            print("==== end date:")
-            print(datetime.fromtimestamp(int(end_date)))
             images = images.filter(created_at__lte=datetime.fromtimestamp(int(end_date)))
         if person is not None:
-            images = images.filter(people__name__icontains=person)
+            images = images.filter(people__name__icontains=person).distinct()
 
         serializer = ImageSerializer(images, many=True)
         return Response(serializer.data)
@@ -74,8 +70,23 @@ class ImageView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class ImageDetailView(APIView):
+
+    permission_classes = [IsAuthenticated, ]
+
     def get(self, request, pk):
         image = Image.objects.get(id=pk).prefetch_realted("people")
 
         return Response("Hi")
 
+
+class PeopleOnImageView(APIView):
+
+    # permission_classes = [IsAuthenticated, ]
+
+    def get(self, request):
+        starts_with = request.query_params.get("starts_with")
+        people = PeopleOnImage.objects.filter(name__startswith=starts_with) if starts_with is not None else PeopleOnImage.objects.all()
+        serializer = PeopleOnImageSerializer(people, many=True)
+        return Response(serializer.data)
+
+            

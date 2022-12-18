@@ -30,7 +30,5 @@ class PeopleOnImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = PeopleOnImage
         fields = [
-            "id",
             "name",
-            "image",
         ]

@@ -21,7 +21,6 @@ else store.setAccessToken(accessToken);
     <div class="wrapper">
       <nav>
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
         <RouterLink to="/sign-in" @click="logout">Logout</RouterLink>
       </nav>
     </div>
